@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="812d5aaf-2d34-4a04-9a1f-aeef8c6a9e23" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="math" doc:id="ffebacf4-5434-4124-bfef-86f7ce72515a" >
+		<http:listener doc:name="Listener" doc:id="66326a33-6938-41d7-9199-f24cd3a4395e" config-ref="HTTP_Listener_config" path="/math"/>
+		<ee:transform doc:name="Transform Message" doc:id="613bb10d-561b-40e7-af1d-6bf9c132fcbc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{ "mathOperators" : [
+    { "2 + 2" : (2 + 2) },
+    { "2 - 2" : (2 - 2) },
+    { "2 * 2" : (2 * 2) },
+    { "2 / 2" : (2 / 2) },
+    { "[1,2,3] - 1 + 4" : [1,2,3] - 1 + 4},
+    { "{a:1, b:2, c:3} - 'a' " : {a:1, b:2, c:3} - "a"},
+    { "|2021-03-02T10:39:59| - |P1D| + |PT3H|" : |2021-03-02T10:39:59| - |P1D| + |PT3H|}
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="relation" doc:id="818b273c-550e-40ea-9283-6ba5307a6c0d" >
+		<http:listener doc:name="Listener" doc:id="aae94e26-1ebd-4adb-a004-c6d2e9691709" config-ref="HTTP_Listener_config" path="/relation"/>
+		<ee:transform doc:name="Transform Message" doc:id="73139e5f-1884-45d1-9170-ff1fc8d7cba6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{ "relational" : [
+    { "1 < 1" : (1 < 1) },
+    { "1 > 2" : (1 > 2) },
+    { "1 <= 1" : (1 <= 1) },
+    { "1 >= 1" : (1 >= 1) }
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="logical" doc:id="5f261b4b-be17-42ea-8e36-94a758bea30f" >
+		<http:listener doc:name="Listener" doc:id="17a2274c-5fb8-42c4-90ba-c46e2adf0086" config-ref="HTTP_Listener_config" path="/logical"/>
+		<ee:transform doc:name="Transform Message" doc:id="554a212e-f219-4460-a4fa-569a197dcc44" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var myArray = [1,2,3,4,5]
+var myMap = myArray map not (($ mod 2) == 0)
+---
+{
+  "not" : [
+    "notTrue" : not true,
+    "notFalse" : not false,
+    "myMapWithNot" : myMap
+  ],
+  "and" : [
+    "andTrueFalse" : true and false,
+    "andIsTrue" : (1 + 1 == 2) and (2 + 2 == 4),
+    "andIsFalse" : (1 + 1 == 2) and (2 + 2 == 2)
+  ],
+  "or" : [
+    "orTrueFalse" : true or false,
+    "orIsTrue" : (1 + 1 == 2) or (2 + 2 == 2),
+    "orIsFalse" : (1 + 1 == 1) or (2 + 2 == 2)
+  ],
+  "!-vs-not" : [
+	  "example-!" : (! true or true),
+	  "example-not" : (not true or true)
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="insert" doc:id="60cdf6c6-ac0d-4da1-9048-2fc71e106209" >
+		<http:listener doc:name="Listener" doc:id="9cf83491-88ed-420d-a04f-3eafe4f43dba" config-ref="HTTP_Listener_config" path="/insert"/>
+		<ee:transform doc:name="Transform Message" doc:id="17664967-b9be-4239-aff8-6af875c79bc2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "prepend-append" : [
+  	 // Array on right side when prepending.
+     { "prepend" : 1 >> [2] },
+     { "prepend-number" : 1 >> [1] },
+     { "prepend-string" : "a" >> [1] },
+     { "prepend-object" : { "a" : "b"} >> [1] },
+     { "prepend-array" : [1] >> [2, 3] },
+     { "prepend-binary" : (1 as Binary) >> [1] },
+     { "prepend-date-time" : |23:57:59Z| >> [ |2017-10-01| ] },
+  	 // Array is on left side when appending.
+     { "append-number" : [1] << 2 },
+     { "append-string" : [1] << "a" },
+     { "append-object" : [1] << { "a" : "b"} },
+     { "append-array" : [1,2] << [1, 2, 3] },
+     { "append-binary" : [1] << (1 as Binary) },
+     { "append-date-time" : [ |2017-10-01| ] << |23:57:59Z| },
+     { "append-object-to-array" : [1,2] << {"a" : "b"} },
+     { "append-array-to-array1" : ["a","b"] << ["c","d"] },
+     { "append-array-to-array2" : [["a","b"],["c","d"]] << ["e","f"] },
+     // + always appends within the array
+     { "append-with-+" : [1] + 2 },
+     { "append-with-+" : [2] + 1 },
+     { "removeNumberFromArray" : ( [1,2,3] - 2 ) },
+     { "removeObjectFromArray" : ( [ {a : "b"}, {c : "d"} , { e : "f"} ] - { c : "d"} ) }
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="do_scope" doc:id="32acabf2-db3a-4537-9f05-2264af5fccac" >
+		<http:listener doc:name="Listener" doc:id="415a077d-c7a9-47c1-a462-4c2732e9d1fd" config-ref="HTTP_Listener_config" path="/do"/>
+		<ee:transform doc:name="Transform Message" doc:id="69636f49-39b4-47fc-8e4b-416aa5228644" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+do {
+      var myVar = 2
+      ---
+      3 + myVar
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="update" doc:id="c6fa5097-a670-42d0-94d8-4560b4001400" >
+		<http:listener doc:name="Listener" doc:id="37179062-44e2-4e6c-b65d-f89f7632c512" config-ref="HTTP_Listener_config" path="/updt"/>
+		<ee:transform doc:name="Transform Message" doc:id="0153c171-5e95-46ec-b266-9b6d932d89e9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	payload update {
+		case age at .age -> age + 2
+	}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="xml" doc:id="653f4cec-4c4b-405c-8327-1d9c949f8f5f" >
+		<http:listener doc:name="Listener" doc:id="283367eb-537a-4c2f-9dcb-4d9e945b8716" config-ref="HTTP_Listener_config" path="/xml"/>
+		<ee:transform doc:name="Transform Message" doc:id="6ea04f6d-e4e1-4363-b148-a0c895909be3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+	payload.friends.*circle.*name map {
+    name : $
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="excel" doc:id="739bb626-e090-44bd-b46c-b5a6f90870e0" >
+		<http:listener doc:name="Listener" doc:id="87549e25-05a1-4cc8-b6ff-f415028977d0" config-ref="HTTP_Listener_config" path="excel"/>
+		<ee:transform doc:name="Transform Message" doc:id="f1bff856-4123-4d35-8bd2-8bc8c6af2cc4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var excel = readUrl("classpath://adarsh.xlsx","application/xlsx")
+output application/json
+---
+{
+	"adarsh": excel
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
