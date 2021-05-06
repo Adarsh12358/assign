@@ -40,7 +40,7 @@
                     				  <password>Adarsh@123</password>
                      				 <!-- Environment Parameter -->
                     				  <environment>Sandbox</environment>
-                    				  <applicationName>assign</applicationName>
+                    				  <applicationName>assign1234</applicationName>
                     			       	<!--  <businessGroup>${cloudhub.bg}</businessGroup>  -->
                     				  <workerType>MICRO</workerType>
                     				  </cloudHubDeployment>
